@@ -34,20 +34,23 @@ router.post('/register', (req, res)=>{
     // Here the expectation is that the text box is also called email
   .then(user => {
       if(user){
-          errors.email = 'Email already exists';
-          errors.username = 'UserName already exists';
+          // errors.email = 'Email already exists';
+          // errors.username = 'UserName already exists';
             //This checks for duplicates in email and username  
          if(user.email==req.body.email && user.username==req.body.username){
+          errors.email = 'Email already exists';
+           errors.username = 'UserName already exists';
                 return res.status(400).json({
-                    email: 'Email already exists',
-                    UserName: 'UserName already exists'
+                  errors
+                    // email: 'Email already exists',
+                    // UserName: 'UserName already exists'
                 })}   
           else if(user.email==req.body.email){
-                return res.status(400).json({
-                    email: 'Email already exists'})}
+               errors.email='Email already exists';
+                return res.status(400).json({errors})}
            else if(user.username==req.body.username){
-                return res.status(400).json({
-                username: 'UserName already exists'})}
+               errors.username ='UserName already exists';
+                return res.status(400).json({errors})}
                  
            }   
       else{
@@ -66,11 +69,13 @@ router.post('/register', (req, res)=>{
           });
          bcrypt.genSalt(10, (err, salt) => {
            if(err){
-               return res.status(400).json(({password: 'Failed encrypting'}));
+               errors.password = 'Failed encrypting';
+               return res.status(400).json(errors);
                }  
             bcrypt.hash(newUser.password, salt, (err, hash) =>{
                 if(err){
-                    return res.status(400).json(({password: 'Failed hashing'}));
+                    errors.password = 'Failed hashing';
+                    return res.status(400).json(errors);
                     } 
                 newUser.password=hash;
                 newUser.save()
@@ -91,12 +96,15 @@ router.post('/login', (req,res) => {
     const email= req.body.email;
     const username = req.body.username;
     const password = req.body.password;
+
+    
     //Check for email as login
     if(email!=null && (username==null || username=='')){
     User.findOne({email})
        .then(user => {
           if(!user){
-            return res.status(400).json({email: 'User not found'});
+            errors.email='User not found';
+            return res.status(400).json(errors);
           }
         
         //Check password
@@ -125,8 +133,8 @@ router.post('/login', (req,res) => {
                 });
           }
           else{
-          return res.status(400).json({
-              password: 'Password incorrect'});
+            errors.password = 'Password incorrect';
+            return res.status(400).json(errors);
           }
               });
               
@@ -137,7 +145,9 @@ router.post('/login', (req,res) => {
             User.findOne({username})
                .then(user => {
                   if(!user){
-                    return res.status(400).json({username: 'User not found'});}
+                    errors.username = 'User not found';
+                    return res.status(400).json(errors);
+                  }
                 
                 //Check password
                 bcrypt.compare(password, user.password)
@@ -165,7 +175,8 @@ router.post('/login', (req,res) => {
                             });
                       }
                       else{
-                      return res.status(400).json({password: 'Password incorrect'});
+                        errors.password = 'Password incorrect';
+                        return res.status(400).json(errors);
                       }
                     });
                   })
@@ -187,9 +198,5 @@ router.get(
      email: req.user.email
    });
   }
-
 )
-
-
-
 module.exports = router;
