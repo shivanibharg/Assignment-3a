@@ -60,8 +60,9 @@ console.log(req.user.id);
          //console.log(profile.follow.user);
 
         //Shravani- The below command does not seem to filter out the users who are not in profile.follow.user field
-         //Profile.find({ $match: { user: mongoose.Types.ObjectId(profile.follow.filter(follows=> follows.user.toString()))}})
+         
         Profile.find({ user: {$nin: profile.follow.filter(follows => follows.user.toString())}})
+        //Profile.find({ $match: { user: mongoose.Types.ObjectId(profile.follow.filter(follows=> follows.user.toString()))}})
         //Profile.find({owner: User.user()}, {fields: {user: 1}}).fetch()
                        
         .then(users=>{
