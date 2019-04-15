@@ -19,7 +19,7 @@ router.get('/',
     const errors = {};
 
     Profile.findOne({user: req.user.id})
-      .populate('user', ['name', 'avatar'])
+      .populate('user', ['name', 'username', 'email'])
       .then(profile => {
         if (!profile){
           errors.noprofile = 'There is no profile for this user';
@@ -31,25 +31,61 @@ router.get('/',
   }
 )
 
-// @route   GET api/profile/all
+// @route   GET api/profile/all(WHICH CAN BE FOLLOWED)
 // @desc    Get all profiles
-// @access  Public
-router.get('/all', (req, res) => {
-  const errors = {};
+// @access  Private
 
-  Profile.find()
-    .populate('user', ['name', 'avatar'])
-    .then(profiles => {
-      if (!profiles) {
-        errors.noprofile = 'There are no profiles';
-        return res.status(404).json(errors);
-      }
+router.get(
+  '/all', passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    //const { errors, isValid } = validateProfileInput(req.body);
+    // Check Validation
+    // if (!isValid) {
+    //   // Return any errors with 400 status
+    //   return res.status(400).json(errors);
+    // }
+// router.get('/all', (req, res) => {
+const errors = {};
 
-      res.json(profiles);
-    })
-    .catch(err => res.status(404).json({ profile: 'There are no profiles' }));
-});
+//Profile.find({})
+console.log(req.user.id);
+  Profile.findOne({ user: req.user.id })
+  .populate('user', ['name', 'avatar'])
+  .then(profile => {
+    console.log("data found"+req.user.id);
+    
+     if (profile.follow.filter(follows => follows.user.toString()).length > 0) {
+         console.log(profile.bio);
+         console.log(profile.user.id);
+         //console.log(profile.follow.user);
 
+        //Shravani- The below command does not seem to filter out the users who are not in profile.follow.user field
+         //Profile.find({ $match: { user: mongoose.Types.ObjectId(profile.follow.filter(follows=> follows.user.toString()))}})
+        Profile.find({ user: {$nin: profile.follow.filter(follows => follows.user.toString())}})
+        //Profile.find({owner: User.user()}, {fields: {user: 1}}).fetch()
+                       
+        .then(users=>{
+          //console.log("Profile info"+ profile.follow.filter(follows=>follow.user.toString()));
+          res.json(users)})
+          console.log(profile.website);
+        }
+      else if(profile.follow.filter(follows => follows.user.toString()).length===0)
+      
+      {//Can change to user table by saying User.find({_id: {$ne: req.user.id}})
+      //If you did not find any user that you follow then display all users in database
+        Profile.find({ user: {$ne: req.user.id}})
+         .then(users=>{
+          res.json(users)})
+          console.log("No follow found");
+       }
+        
+      })
+      .catch(err => res.status(404).json({ profile: "No profiles found" }))
+      
+    });
+    
+     
+    
 // @route   GET api/profile/handle/:handle
 // @desc    Get profile by handle
 // @access  Public
@@ -70,22 +106,31 @@ router.get('/handle/:handle', (req, res) => {
     .catch(err => res.status(404).json(err));
 });
 
-// @route   GET api/profile/user/:user_id
+// @route   POST api/profile/user/:user_id(FOLLOW)
 // @desc    Get profile by user ID
-// @access  Public
+// @access  Private
 
-router.get('/user/:user_id', (req, res) => {
+router.post('/user/:user_id', 
+passport.authenticate('jwt', { session: false }),
+(req, res) => {
   const errors = {};
 
-  Profile.findOne({ user: req.params.user_id })
-    .populate('user', ['name', 'avatar'])
+  Profile.findOne({ user: req.user.id })
+     
     .then(profile => {
+      
       if (!profile) {
         errors.noprofile = 'There is no profile for this user';
         res.status(404).json(errors);
       }
+      else if(req.user.id===req.params.user_id){
+        errors.noFollow= "You cannot follow yourself";
+        res.status(404).json(errors);
+      }
 
-      res.json(profile);
+      profile.follow.unshift({ user: req.params.user_id });
+
+          profile.save().then(profiles => res.json(profiles));
     })
     .catch(err =>
       res.status(404).json({ profile: 'There is no profile for this user' })
@@ -102,18 +147,20 @@ router.post(
   (req, res) => {
     const { errors, isValid } = validateProfileInput(req.body);
     // Check Validation
-    if (!isValid) {
-      // Return any errors with 400 status
-      return res.status(400).json(errors);
-    }
+    // if (!isValid) {
+    //   // Return any errors with 400 status
+    //   return res.status(400).json(errors);
+    // }
     
     // Get fields
     const profileFields = {};
     profileFields.user = req.user.id;
-    if (req.body.handle) profileFields.handle = req.body.handle;
+    //if (req.body.handle) profileFields.handle = req.body.handle;
     if (req.body.website) profileFields.website = req.body.website;
     if (req.body.bio) profileFields.bio = req.body.bio;
-    if (req.body.status) profileFields.status = req.body.status;
+    //if (req.body.status) profileFields.status = req.body.status;
+    if (req.body.gender) profileFields.gender = req.body.gender;
+    if (req.body.location) profileFields.location = req.body.location;
    
     
     Profile.findOne({ user: req.user.id })
@@ -125,21 +172,21 @@ router.post(
           { $set: profileFields },
           { new: true }
         ).then(profile => res.json(profile));
-      } else {
+        } //else {
 
-        // Check if handle exists
-        Profile.findOne({ handle: profileFields.handle })
-        .then(profile => {
-          if (profile) {
-            errors.handle = 'That handle already exists';
-            res.status(400).json(errors);
-          }
-         // Save Profile
+      //   // Check if handle exists
+      //   Profile.findOne({ handle: profileFields.handle })
+      //   .then(profile => {
+      //     if (profile) {
+      //       errors.handle = 'That handle already exists';
+      //       res.status(400).json(errors);
+      //     }
+        // Save Profile
          new Profile(profileFields)
          .save()
          .then(profile => res.json(profile));
-        });
-      }
+        //});
+      //}
     });
   }
 );
@@ -159,4 +206,7 @@ router.delete(
     });
   }
 );
+
+
+
 module.exports = router;

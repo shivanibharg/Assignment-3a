@@ -5,17 +5,26 @@ const ProfileSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'users'
   },
-  handle: {
-    type: String,
-    required: true,
-    max: 40
-  },
+    
   website: {
     type: String
   },
   bio: {
     type: String
-  }
+  },
+  gender: {
+    type: String
+   },
+   location: {
+     type: String
+   },
+   follow: [{
+      user: {
+            type: Schema.Types.ObjectId,
+            ref: 'users'
+          }
+        }
+    ]
 });
 
 module.exports = Profile = mongoose.model('profile', ProfileSchema);

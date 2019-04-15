@@ -64,12 +64,14 @@ router.post('/register', (req, res)=>{
               r: 'pg',
               d: 'mm'
           });
+          const follow = false;
           const newUser = new User ({
              email: req.body.email,
              fullname: req.body.fullname,
              username: req.body.username,
              password: req.body.password,
-             avatar
+             avatar,
+             follow
           });
          bcrypt.genSalt(10, (err, salt) => {
            if(err){
