@@ -100,7 +100,6 @@ router.post('/register', (req, res)=>{
 
 router.post('/login', (req,res) => {
   
-
   const {errors, isValid}= validateLoginInput(req.body);
 
    //Check validation
@@ -108,7 +107,7 @@ router.post('/login', (req,res) => {
        return res.status(400).json(errors);
    }
 
-   const eusername= req.body.eusername;
+  const eusername= req.body.eusername;
   const password = req.body.password;
 
  //Check for email as login
@@ -125,8 +124,7 @@ router.post('/login', (req,res) => {
             errors.eusername='User not found';
             return res.status(400).json(errors);
           //}
-          //else if(user.username==null && user.email)
-
+         //else if(user.username==null && user.email)
         }
       
       //Check password
@@ -162,10 +160,6 @@ router.post('/login', (req,res) => {
             
         })
         .catch(err => console.log(err));
-                     
-                         
-              
-
      })//end of router
 
 

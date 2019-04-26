@@ -84,9 +84,7 @@ console.log(req.user.id);
       .catch(err => res.status(404).json({ profile: "No profiles found" }))
       
     });
-    
      
-    
 // @route   GET api/profile/handle/:handle
 // @desc    Get profile by handle
 // @access  Public
