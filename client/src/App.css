@@ -1,6 +1,15 @@
 img {
   width: 100%;
 }
+.lead1{
+  font-size: 30px;
+}
+.nav-link{
+  font-weight: bold;
+  font-size:20px;
+  text-emphasis-color:white;
+  
+}
 
 .landing {
   position: relative;
@@ -10,6 +19,9 @@ img {
   height: 100vh;
   margin-top: -24px;
   margin-bottom: -50px;
+ 
+    background-color: rgb(176,224,230);
+ 
 }
 
 .landing-inner {
@@ -37,3 +49,36 @@ img {
 .form-control::placeholder {
   color: #bbb !important;
 }
+
+.img {
+  width: 200px;
+  height: 200px;
+ }
+
+ /* .card card-body mb-3{
+
+ } */
+ #comment1{
+  padding:2px;
+  
+ }
+ .lead{
+   width:400px;
+   
+   margin-right:5px;
+   margin-top:15px;
+   
+ }
+ .position-relative{
+   padding:0px;
+ }
+ .position-absolute{
+  
+  top: 15px;
+  right: 15px;
+  
+ }
+ p.font-weight-bold{
+   height:40px;
+   margin-bottom:0px;
+ }

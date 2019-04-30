@@ -7,8 +7,10 @@ const passport = require ('passport');
 
 // Post model
 const Post = require('../../models/Post');
-// Profile model
-const Profile = require('../../models/Profile');
+// // Profile model
+// const Profile = require('../../models/Profile');
+//User model
+const User = require('../../models/User');
 
 // Validation
 const validatePostInput = require('../../validation/post');
@@ -40,7 +42,7 @@ router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    const { errors, isValid } = validatePostInput(req.body);
+    const { errors,isValid } = validatePostInput(req.body);
 
     // Check Validation
     if (!isValid) {
@@ -49,10 +51,12 @@ router.post(
     }
 
     const newPost = new Post({
-      text: req.body.text,
-      name: req.body.name,
+      image: req.body.image,
+      username:req.body.username,
       avatar: req.body.avatar,
-      user: req.user.id
+      text:req.body.text,
+     
+    
     });
 
     newPost.save().then(post => res.json(post));
@@ -87,11 +91,12 @@ router.delete(
 // @route   POST api/posts/like/:id
 // @desc    Like post
 // @access  Private
+//this works
 router.post(
   '/like/:id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Profile.findOne({ user: req.user.id }).then(profile => {
+    User.findOne({ user: req.user.id }).then(profile => {
       Post.findById(req.params.id)
         .then(post => {
           if (
@@ -105,6 +110,7 @@ router.post(
 
           // Add user id to likes array
           post.likes.unshift({ user: req.user.id });
+          
 
           post.save().then(post => res.json(post));
         })
@@ -113,15 +119,29 @@ router.post(
   }
 );
 
+// @route   POST api/posts/likecounter/:id
+// @desc    Like post counter
+// @access  Private
+router.get('/likecounter/:id',passport.authenticate('jwt', { session: false }),
+(req,res) => { 
+  Post.findById(req.params.id).then (post => { 
+    var c = post.likes;
+    res.send(c.length.toString())
+})
+.catch(err=> res.status(404).json({likesnotfound:"no likes yet"}));
+})
+
+
 
 // @route   POST api/posts/unlike/:id
 // @desc    Unlike post
 // @access  Private
+// this works
 router.post(
   '/unlike/:id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Profile.findOne({ user: req.user.id }).then(profile => {
+    User.findOne({ user: req.user.id }).then(profile => {
       Post.findById(req.params.id)
         .then(post => {
           if (
@@ -138,10 +158,12 @@ router.post(
             .map(item => item.user.toString())
             .indexOf(req.user.id);
 
-          // Splice out of array
-          post.likes.splice(removeIndex, 1);
+          // Splice out of array and save it to unlikes
+         unlikes = post.likes.splice(removeIndex, 1);
 
-          // Save
+          post.unlikes.unshift({ user: req.user.id })
+
+          -// Save
           post.save().then(post => res.json(post));
         })
         .catch(err => res.status(404).json({ postnotfound: 'No post found' }));
@@ -149,7 +171,29 @@ router.post(
   }
 );
 
-// @route   POST api/posts/comment/:id
+// @route   POST api/posts/unlike/:id
+// @desc    dislike counter 
+// @access  Private
+// this works
+router.get('/dislikecounter/:id',passport.authenticate('jwt', { session: false }),
+(req, res) => { Post.findById(req.params.id)
+  .then(post => {
+      var c = post.unlikes;
+      res.send(c.length.toString())
+  })
+  .catch(err=> res.status(404).json({likesnotfound:"no likes yet"}));
+  })
+
+
+
+
+
+
+
+
+
+
+// @route   POST api/posts/comments/:id
 // @desc    Add comment to post
 // @access  Private
 router.post(
@@ -168,7 +212,7 @@ router.post(
       .then(post => {
         const newComment = {
           text: req.body.text,
-          name: req.body.name,
+          username: req.body.username,
           avatar: req.body.avatar,
           user: req.user.id
         };
@@ -198,10 +242,8 @@ router.delete(
             comment => comment._id.toString() === req.params.comment_id
           ).length === 0
         ) {
-          return res
-            .status(404)
-            .json({ commentnotexists: 'Comment does not exist' });
-        }
+          return res.status(404).json({ commentnotexists: 'Comment does not exist' });
+          }
 
         // Get remove index
         const removeIndex = post.comments
@@ -216,7 +258,5 @@ router.delete(
       .catch(err => res.status(404).json({ postnotfound: 'No post found' }));
   }
 );
-
-
 module.exports = router;
 

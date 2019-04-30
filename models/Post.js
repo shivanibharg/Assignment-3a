@@ -9,47 +9,72 @@ const PostSchema = new Schema({
   },
   text: {
     type: String,
-    required: true
+    //required: true
+    
   },
-  name: {
+  username: {
     type: String
   },
   avatar: {
     type: String
   },
-  // likes: [
-  //   {
-  //     user: {
-  //       type: Schema.Types.ObjectId,
-  //       ref: 'users'
-  //     }
-  //   }
-  // ],
-  // comments: [
-  //   {
-  //     user: {
-  //       type: Schema.Types.ObjectId,
-  //       ref: 'users'
-  //     },
-  //     text: {
-  //       type: String,
-  //       required: true
-  //     },
-  //     name: {
-  //       type: String
-  //     },
-  //     avatar: {
-  //       type: String
-  //     },
-  //     date: {
-  //       type: Date,
-  //       default: Date.now
-  //     }
-  //   }
-  // ],
+  likes: [
+    {
+      user: {
+        type: Schema.Types.ObjectId,
+        ref: 'users'
+      }
+    }
+  ],
+  unlikes:[
+    {
+      user:{
+        type:Schema.Types.ObjectId,
+        ref:'users'
+      }
+    }
+  ],
+  comments: [
+    {
+      user: {
+        type: Schema.Types.ObjectId,
+        ref: 'users'
+      },
+      text: {
+        type: String,
+        
+      },
+      username: {
+        type: String
+      },
+      
+      date: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ],
   date: {
     type: Date,
     default: Date.now
+  },
+  image:{
+    type: String,
+    
+  },
+  video:
+  {
+    type: String,
+    
+  },
+
+  likecounter:{
+    type: Number,
+    
+  },
+  dislikecounter:{
+    type: Number,
+    
   }
 });
 
